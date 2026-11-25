@@ -1,0 +1,268 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Importar datos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: una columna de trabajo (máx. 980px): buscador, pestañas Artículo / Condiciones, y en Condiciones comparación de tres ofertas, calendario de pagos abierto y gráfico de tesorería. */
+:root{
+  --bg:#F4F6F9; --surface:#FFFFFF; --surface2:#EDF1F6; --ink:#141922; --muted:#566074; --line:#DCE2EB;
+  --accent:#1B4FD6; --accent-ink:#FFFFFF; --accent-soft:#E3EBFD;
+  --ok:#17794D; --ok-bg:#DFF3E8; --warn:#8A5A00; --warn-bg:#FBEBC8; --bad:#B3261E; --bad-bg:#FBE1DE;
+  --f-display:'Bricolage Grotesque','IBM Plex Sans',system-ui,sans-serif;
+  --f-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1218; --surface:#161C26; --surface2:#1E2633; --ink:#E7EBF2; --muted:#98A2B5; --line:#2B3443;
+  --accent:#7EA3FF; --accent-ink:#0B1020; --accent-soft:#1F2C4D;
+  --ok:#52D08E; --ok-bg:#12301F; --warn:#F2B544; --warn-bg:#35280A; --bad:#FF8A80; --bad-bg:#3A1714; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1218; --surface:#161C26; --surface2:#1E2633; --ink:#E7EBF2; --muted:#98A2B5; --line:#2B3443;
+  --accent:#7EA3FF; --accent-ink:#0B1020; --accent-soft:#1F2C4D;
+  --ok:#52D08E; --ok-bg:#12301F; --warn:#F2B544; --warn-bg:#35280A; --bad:#FF8A80; --bad-bg:#3A1714; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body);padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.15}
+h1{font-size:26px;font-weight:700}
+h2{font-size:19px;font-weight:700}
+h3{font-size:15px;font-weight:700}
+.num,.amt{font-variant-numeric:tabular-nums}
+.amt{font-family:var(--f-display);font-weight:700}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+header{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.hd-sub{color:var(--muted);font-size:13px;margin-top:4px}
+.tag{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:var(--surface2);color:var(--muted);border:1px solid var(--line)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:8px;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.search{display:flex;flex-direction:column;gap:10px}
+.search input{width:100%;font:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 11px;text-align:left;display:flex;flex-direction:column;min-width:0}
+.chip b{font-family:var(--f-display);font-size:13px}
+.chip span{font-size:12px;color:var(--muted);max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 14px;font-weight:600;color:var(--muted)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.art-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:flex-start}
+.signals{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.sig{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.sig .lbl{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.sig .val{font-family:var(--f-display);font-size:20px;font-weight:700}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;width:fit-content}
+.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.pill.ok{background:var(--ok-bg);color:var(--ok)} .pill.warn{background:var(--warn-bg);color:var(--warn)} .pill.bad{background:var(--bad-bg);color:var(--bad)} .pill.na{background:var(--surface2);color:var(--muted)}
+dl.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0 24px;margin:0}
+dl.facts div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+dt{color:var(--muted)} dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:600px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle}
+th:first-child,td:first-child{text-align:left}
+thead th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:600;position:sticky;top:0}
+tr.sum td{font-weight:700;background:var(--surface2)}
+tr.sub td:first-child{color:var(--muted);padding-left:22px}
+td input{width:104px;font:inherit;text-align:right;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);font-variant-numeric:tabular-nums}
+.delta.pos{color:var(--bad)} .delta.neg{color:var(--ok)}
+.ctrl{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end}
+.ctrl label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.ctrl input,.ctrl select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);min-width:0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{background:var(--surface);border:0;padding:7px 12px;font-size:13px;font-weight:500}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+details.card>summary{cursor:pointer;font-family:var(--f-display);font-size:19px;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:8px}
+details.card>summary::after{content:"▾";color:var(--muted)} details.card:not([open])>summary::after{content:"▸"}
+details.card>summary::-webkit-details-marker{display:none}
+.stack{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.note{font-size:13px;color:var(--muted)}
+.banner{border-radius:10px;padding:10px 12px;font-size:14px;border:1px solid var(--line)}
+.banner.ok{background:var(--ok-bg);color:var(--ok)} .banner.warn{background:var(--warn-bg);color:var(--warn)} .banner.bad{background:var(--bad-bg);color:var(--bad)}
+svg text{fill:var(--muted);font:11px var(--f-body)}
+.revgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.revcol{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.revcol .row{display:flex;justify-content:space-between;gap:10px}
+.foot{font-size:12px;color:var(--muted)}
+.res td,.res th{font-size:13px;text-align:left;vertical-align:top}
+.nar-step{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--surface);display:flex;flex-direction:column;gap:10px;scroll-margin-top:12px}
+.nar-step p{margin:0}.nar-step ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.nar-h{display:flex;align-items:center;gap:12px}
+.nar-n{width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;flex:none}
+.nar-ico{width:38px;height:38px;flex:none;color:var(--accent)}
+.nar-q{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.nar-box{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.nar-box div{background:var(--surface2);border-radius:10px;padding:8px 10px}
+.nar-box b{display:block;font-family:var(--f-display);font-size:17px}.nar-box span{font-size:12px;color:var(--muted)}
+.nar-idx{display:flex;gap:6px;flex-wrap:wrap}.nar-idx a{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;text-decoration:none;color:var(--ink);font-weight:600;font-size:13px}
+.nar-idx a:hover{border-color:var(--accent);background:var(--accent-soft)}
+.nar-alt{border-left:3px solid var(--line);padding-left:12px;display:flex;flex-direction:column;gap:4px}
+abbr.gl{text-decoration:underline dotted;text-underline-offset:3px;cursor:help}
+.tl{position:relative;height:96px;margin:4px 34px 0}
+.tl .track{position:absolute;left:0;right:0;top:46px;height:6px;background:var(--surface2);border-radius:3px}
+.tl .fill{position:absolute;left:0;top:46px;height:6px;border-radius:3px}
+.tl .fill.ok{background:var(--ok)}.tl .fill.warn{background:var(--warn)}.tl .fill.bad{background:var(--bad)}
+.tl .mk{position:absolute;top:0;height:96px;width:0;border:0;background:none;padding:0}
+.tl .mk i{position:absolute;left:-7px;top:42px;width:14px;height:14px;border-radius:50%;background:var(--surface);border:3px solid var(--accent)}
+.tl .mk.agot i{border-color:var(--bad)}.tl .mk.ped i{border-color:var(--warn)}.tl .mk.rec i{border-color:var(--ok)}
+.tl .mk .lb{position:absolute;left:-40px;width:80px;text-align:center;font-size:11px;line-height:1.25;color:var(--ink)}
+.tl .mk.up .lb{top:2px}.tl .mk.dn .lb{top:62px}
+.bars{display:flex;flex-direction:column;gap:6px}.bar{display:grid;grid-template-columns:minmax(90px,150px) 1fr 70px;gap:8px;align-items:center;font-size:13px}
+.bt{position:relative;height:12px;background:var(--surface2);border-radius:6px}.bf{height:100%;border-radius:6px}.bref{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+.nchip{flex-direction:row;align-items:center;gap:6px;padding:5px 10px}.nchip .dot{width:10px;height:10px;border-radius:50%}
+.sb{position:relative;display:flex;gap:6px;align-items:flex-end;height:120px;padding:0 4px}
+.sbar{flex:1;height:100%;border:0;background:none;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;padding:0;font-size:11px;color:var(--muted)}
+.sbar i{display:block;width:100%;border-radius:5px 5px 0 0;background:var(--ok)}.sbar.warn i{background:var(--warn)}.sbar.bad i{background:var(--bad)}.sbar.cur span{color:var(--ink);font-weight:700}.sbar.cur i{outline:2px solid var(--ink)}
+.sline{position:absolute;left:0;right:0;border-top:2px dashed var(--bad);pointer-events:none}
+.rks{display:flex;flex-wrap:wrap;gap:6px}.rk{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 9px;font-size:13px;display:flex;gap:6px;align-items:center}
+.nar-rec{border-radius:10px;padding:12px;background:var(--accent-soft);font-size:16px}
+ul.tick{list-style:none;padding-left:0!important}ul.tick li::before{content:"☐ ";color:var(--accent)}
+@media (max-width:560px){.tl{margin:4px 30px 0}.bar{grid-template-columns:80px 1fr 62px}}
+.bestmark{color:var(--ok);font-size:12px;font-weight:600;white-space:nowrap}
+summary{cursor:pointer}
+.ok-t{color:var(--ok);font-weight:700}.ko-t{color:var(--bad);font-weight:700}
+@media (max-width:560px){h1{font-size:22px}.tabs button{padding:10px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.drop{border:2px dashed var(--line);border-radius:12px;padding:22px;text-align:center;background:var(--surface2)}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.ver{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.ver.act{border-color:var(--ok);background:var(--ok-bg)}
+.chip{display:inline-block;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600;background:var(--surface2);color:var(--muted)}.chip.ok{background:var(--ok-bg);color:var(--ok)}.chip.bad{background:var(--bad-bg);color:var(--bad)}.chip.warn{background:var(--warn-bg);color:var(--warn)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.grid2 input,#ewiz select{width:100%}details.tb{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+#ewiz input,#ewiz select{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+.back{font-size:14px}
+</style></head><body>
+<div style="max-width:980px;margin:12px auto 16px;padding:10px 14px;border:1px solid #8a9ca8;border-radius:8px;font:14px system-ui"><a href="../index.html#eios" style="color:inherit;font-weight:600">← Volver al porfolio</a> · Demo local: usa datos ficticios; los cambios se guardan solo en este navegador. No importes información confidencial.</div><div class="wrap">
+<header><div><h1>Importar datos</h1><div class="hd-sub">Añade un libro de Excel y crea otra versión de los datos de la app. <span class="tag">Sin autoridad decisional</span></div></div>
+<div class="hd-act"><a class="back" href="index.html" id="back">← Volver al comparador</a></div></header>
+<section class="card stack"><h2>1. Elige el libro de Excel</h2>
+<p class="note" style="margin:0">El libro debe seguir la <b>plantilla de EIOS</b>: las mismas hojas y columnas, con los datos de tu empresa. Sirve igual un libro de prueba que uno real, y la app lo trata de la misma manera. Si vienes de un ERP, pasa sus datos a la plantilla (una vez por ERP). La app lo lee en tu navegador: el archivo no se sube a ningún sitio.</p>
+<p class="note" style="margin:0"><b>La plantilla</b> es el libro de datos de EIOS (Plantilla_EIOS_Libro_de_datos.xlsx, con datos de ejemplo que se sustituyen por los tuyos). Esta página no puede ofrecerla para descargar: te la entrega quien administra la app. Trae una primera hoja, «00_Leeme», con qué contiene cada hoja, qué columnas pide y en qué orden. La app lee las columnas por su posición, no por su nombre, y una celda vacía se trata como «no informado».</p>
+<details><summary>Qué hojas necesita la plantilla</summary><div class="tablewrap" style="margin-top:8px"><table style="min-width:520px"><thead><tr><th>Hoja</th><th>Para qué sirve</th><th>Obligatoria</th></tr></thead><tbody id="guia"></tbody></table></div>
+<p class="note" style="margin:8px 0 0">Mantén el nombre de las hojas y el orden de las columnas de la plantilla; las filas se pueden añadir o quitar. Un dato que falta se queda como «no informado», no como cero. La hoja <b>97_Guia_Carga</b> de la plantilla lista cada campo y de qué columna sale.</p></details>
+<div class="drop" id="drop"><p style="margin:0 0 10px">Arrastra aquí el archivo .xlsx</p><input type="file" id="file" accept=".xlsx,.xlsm"></div>
+<div id="msg" role="status"></div></section>
+<section class="card stack" id="erp"><h2>Importar desde tu ERP (asistente)</h2>
+<p class="small muted" style="margin:0">Sube uno o varios Excel que salgan de tu ERP (listados de artículos, existencias, facturas, cartera…). No hace falta seguir la plantilla: te propongo qué columna es cada dato, tú lo compruebas, y la app calcula lo demás (consumo, entregas, fiabilidad, rotura). Lo que tu ERP no trae lo escribes en un formulario, marcado como supuesto.</p>
+<div class="drop"><input type="file" id="efile" multiple accept=".xlsx,.xlsm,.xls,.csv"></div>
+<div id="emsg" role="status"></div><div id="ewiz" class="stack" hidden></div></section>
+<section class="card stack" id="dia"><h2>Actualizar datos del día</h2>
+<p class="note" style="margin:0">Para el día a día no hace falta repetir el libro completo. Sube un libro pequeño con <b>solo las hojas que cambian</b> (existencias 004, recepciones pendientes 014, balance 011, cobros y pagos previstos 010, cartera de cobros 012, y si quieres 016). La app las une a la versión en uso y deja todo lo demás como estaba. Las ventas y compras históricas no se actualizan aquí. Las hojas se llaman y se ordenan como en la plantilla; las que no subas no se tocan.</p>
+<p class="small" id="dbase" style="margin:0"></p>
+<label class="small muted">Fecha de los datos (si el libro no trae la hoja 016)<br><input type="date" id="dcorte"></label>
+<div class="drop" id="ddrop"><p style="margin:0 0 10px">Arrastra aquí el libro del día (.xlsx)</p><input type="file" id="dfile" accept=".xlsx,.xlsm"></div>
+<div id="dmsg" role="status"></div>
+<div id="dprev" class="stack" hidden></div></section>
+<section class="card stack" id="prev" hidden><h2>2. Revisa lo que se ha leído</h2><div id="prevbody" class="stack"></div>
+<label class="small muted">Nombre de esta versión<br><input type="text" id="vname" style="width:100%;max-width:420px"></label>
+<label class="small" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="vreal" style="margin-top:3px"><span><b>Son datos reales de la empresa</b><br><span class="muted">Sin marcar, la app los trata como datos de prueba (ficticios). Marcado, los textos hablan de datos reales; la app sigue sin tener autoridad decisional. Los datos se guardan en la base de datos de esta página y los ve quien tenga acceso a ella: no marques esto si el libro contiene información que no debe compartirse.</span></span></label>
+<div><button class="btn primary" id="save" type="button">Guardar como nueva versión</button></div></section>
+<section class="card stack"><h2>Versiones guardadas</h2><p class="note" id="store" style="margin:0"></p><div id="vers" class="stack"></div></section>
+<div style="display:flex;justify-content:center;margin:18px 0 6px"><button type="button" class="btn" id="totop">↑ Volver arriba</button></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="import_core.js"></script><script src="import_raw.js"></script><script src="import_map.js"></script>
+<script src="local-db.js"></script>
+<script>
+document.getElementById("totop").onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
+const $=s=>document.querySelector(s), esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const eur=v=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(v);
+try{ const th=localStorage.getItem('cc-theme'); if(th) document.documentElement.setAttribute('data-theme',th); }catch(e){}
+const ST={db:null,act:null,list:[],cur:null};
+const LS={get(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }, set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } }};
+async function init(){
+  try{ if(window.claude&&claude.use){ ST.db=await claude.use('db'); } }catch(e){ ST.db=null; }
+  await load(); }
+async function load(){
+  if(ST.db){ try{ const s=await ST.db.collection('versiones').get(); ST.list=s.docs.map(x=>Object.assign({id:x.id},x.data())).sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)));
+      const a=await ST.db.collection('config').doc('activa').get(); ST.act=a.exists?a.data().id:null; }catch(e){ ST.db=null; } }
+  if(!ST.db){ ST.list=(LS.get('eios-versiones')||[]); ST.act=LS.get('eios-activa'); }
+  render(); }
+function render(){ try{ dBaseRender(); }catch(e){}
+  $('#store').textContent=ST.db?'Las versiones se guardan solo en este navegador.':'Las versiones se guardan solo en este navegador.';
+  const orig=`<div class="ver ${!ST.act?'act':''}"><div><b>Datos originales de la app</b><div class="small muted">Libro v07 de la Ferretería X, los que trae la app de fábrica.</div></div><div>${!ST.act?'<span class="ok-t">En uso</span>':'<button class="btn" data-o="1" type="button">Usar estos</button>'}</div></div>`;
+  $('#vers').innerHTML=orig+ST.list.map(v=>`<div class="ver ${ST.act===v.id?'act':''}"><div><b>${esc(v.nombre)}</b><div class="small muted">${esc(v.fecha.slice(0,10))} · ${esc(v.resumen)}</div></div><div style="display:flex;gap:8px">${ST.act===v.id?'<span class="ok-t">En uso</span>':`<button class="btn" data-u="${v.id}" type="button">Usar esta</button>`}<button class="btn" data-d="${v.id}" type="button">Borrar</button></div></div>`).join('');
+  $('#vers').querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>activar(b.dataset.u));
+  $('#vers').querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>activar(null));
+  $('#vers').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>borrar(b.dataset.d)); }
+async function activar(id){ ST.act=id;
+  if(ST.db){ try{ if(id) await ST.db.collection('config').doc('activa').set({id}); else await ST.db.collection('config').doc('activa').delete(); }catch(e){ msg('bad','No se pudo cambiar la versión en uso.'); return; } } else LS.set('eios-activa',id);
+  render(); msg('ok',id?'Versión en uso cambiada. El comparador la cargará la próxima vez que lo abras.':'Se usan de nuevo los datos originales de la app.'); }
+async function borrar(id){ if(ST.act===id) await activar(null);
+  try{ if(ST.db) await ST.db.collection('versiones').doc(id).delete(); else { ST.list=ST.list.filter(v=>v.id!==id); LS.set('eios-versiones',ST.list); } }catch(e){ msg('bad','No se pudo borrar.'); return; }
+  ST.list=ST.list.filter(v=>v.id!==id); render(); }
+function msg(c,t){ $('#msg').innerHTML=`<div class="banner ${c==='ok'?'ok':c==='warn'?'warn':'bad'} small">${esc(t)}</div>`; }
+function revisar(o,fichero){
+  const D=o.D, avis=[], errs=[];
+  const sumPend=Math.round(o.cli.reduce((s,c)=>s+c.pend,0)*100)/100;
+  if(Math.abs(sumPend-o.info.b430)>1) avis.push(`La cartera de cobros pendiente (${eur(sumPend)}) no coincide con la cuenta 430 del balance (${eur(o.info.b430)}).`);
+  if(!D.flows.length) avis.push('No hay flujos de tesorería: el saldo no se moverá.');
+  const f=D.flows.filter(x=>x.d>D.horizonte); if(f.length) avis.push(`${f.length} flujos de tesorería caen después del horizonte (${D.horizonte}).`);
+  if(D.corte>=D.horizonte) errs.push('La fecha de corte es posterior al horizonte.');
+  if(o.info.miss.length){ const af=D.items.filter(i=>i.falta&&i.falta.length).map(i=>i.sku); avis.push(`Hay ${o.info.miss.length} datos vacíos. No se cuentan como cero: se marcan «no informado» y ${D.falta&&D.falta.length?'todos los artículos':(af.length?'estos artículos':'ningún artículo')} quedarán en «Faltan datos para decidir»${D.falta&&D.falta.length?'':(af.length?': '+af.slice(0,8).join(', ')+(af.length>8?'…':''):'')}. Ejemplos: ${o.info.miss.slice(0,4).join('; ')}${o.info.miss.length>4?'…':''}.`); }
+  if(o.info.supu.length) avis.push(`${o.info.supu.length} avisos de hojas opcionales (${o.info.supu.slice(0,3).join('; ')}${o.info.supu.length>3?'…':''}).`);
+  if(o.info.expl) avis.push(o.info.expl);
+  if(D.consumoBase) avis.push(`El consumo diario se calcula con las ventas de ${D.consumoBase.meses} meses (${D.consumoBase.desde} a ${D.consumoBase.hasta}), no con consumo real registrado. EIOS prevé 12 meses: es un supuesto declarado.`);
+  for(const it of D.items){ const fk=k=>(it.falta||[]).some(x=>x.k===k); if(it.consumo<=0&&!fk('cons')) errs.push('El artículo '+it.sku+' no tiene consumo diario.'); if((it.coste<=0&&!fk('coste'))||(it.pvp<=0&&!fk('pvp'))) errs.push('El artículo '+it.sku+' no tiene coste o PVP.'); if(!o.provH[it.prov]) avis.push('El proveedor '+it.prov+' no tiene historial de entregas (faltan fechas de pedido o de entrega).'); }
+  return {avis,errs,sumPend}; }
+function mostrar(o,nombre,warns,extra){
+    const rv=revisar(o,nombre); if(extra&&extra.length) rv.avis.unshift(...extra);
+    const D=o.D, res=`${D.items.length} artículos, ${Object.keys(D.suppliers).length} proveedores, ${D.flows.length} flujos, ${o.cli.length} clientes`;
+    $('#prevbody').innerHTML=`<div class="boxes" style="display:flex;gap:10px;flex-wrap:wrap">${[[D.items.length,'artículos'],[Object.keys(D.suppliers).length,'proveedores'],[D.flows.length,'flujos de tesorería'],[o.cli.length,'clientes con cartera'],[eur(D.banco),'banco al corte'],[D.corte.split('-').reverse().join('/'),'fecha de corte']].map(([v,l])=>`<div style="flex:1 1 130px;background:var(--surface2);border-radius:10px;padding:10px 12px"><div style="font-weight:700;font-size:18px">${esc(v)}</div><div class="small muted">${l}</div></div>`).join('')}</div>
+     ${rv.errs.length?`<div class="banner bad small"><b>Hay que corregir el libro antes de usarlo (un dato ausente no se trata como cero):</b><ul style="margin:6px 0 0;padding-left:18px">${rv.errs.map(e=>`<li>${esc(e)}</li>`).join('')}</ul></div>`:''}
+     ${[...rv.avis,...warns].length?`<div class="banner warn small"><b>Conviene revisar:</b><ul style="margin:6px 0 0;padding-left:18px">${[...rv.avis,...warns].map(e=>`<li>${esc(e)}</li>`).join('')}</ul></div>`:'<div class="banner ok small">Las comprobaciones básicas salen bien.</div>'}
+     <p class="note" style="margin:0">Saldo mínimo ${eur(D.saldoMin)} · margen ámbar ${eur(D.margenAmbar)} · vigencia ${D.vigencia} días. Marca abajo si son datos reales o de prueba.</p>`;
+    $('#vreal').checked=false; $('#vname').value=nombre.replace(/\.xlsx?m?$/i,''); $('#save').disabled=rv.errs.length>0; $('#prev').hidden=false; CUR={o,res,fichero:nombre};
+    msg(rv.errs.length?'bad':'ok',rv.errs.length?'El libro se ha leído, pero tiene errores.':'Libro leído correctamente.');
+}
+let CUR=null;
+async function leer(file){
+  $('#prev').hidden=true; CUR=null; msg('warn','Leyendo '+file.name+'…');
+  try{ const buf=await file.arrayBuffer(); const wb=XLSX.read(buf,{type:'array'}); const warns=[]; { const falt=GUIA.filter(g=>g[2]&&!wb.Sheets[g[0]]).map(g=>g[0]); if(falt.length) throw new Error('Este libro no sigue la plantilla de EIOS. Faltan estas hojas: '+falt.join(', ')+'. Pasa tus datos a la plantilla de EIOS y vuelve a subirla.'); } const o=EIOSImport.buildD(XLSX,wb,w=>warns.push(w)); mostrar(o,file.name,warns);
+  }catch(e){ msg('bad',(e&&e.message)||'No he podido leer el libro.'); } }
+$('#file').onchange=e=>{ if(e.target.files[0]) leer(e.target.files[0]); };
+const dz=$('#drop'); dz.ondragover=e=>{e.preventDefault();dz.classList.add('over');}; dz.ondragleave=()=>dz.classList.remove('over'); dz.ondrop=e=>{e.preventDefault();dz.classList.remove('over'); if(e.dataTransfer.files[0]) leer(e.dataTransfer.files[0]);};
+$('#save').onclick=async()=>{ if(!CUR) return; const id='v'+Date.now().toString(36), nombre=($('#vname').value||CUR.fichero).trim();
+  const doc={nombre,fecha:new Date().toISOString(),fichero:CUR.fichero,resumen:CUR.res+($('#vreal').checked?' · datos reales':''),datos:JSON.stringify({D:Object.assign({},CUR.o.D,{real:$('#vreal').checked}),cli:CUR.o.cli,provH:CUR.o.provH,rot:CUR.o.rot})};
+  try{ if(ST.db){ await ST.db.collection('versiones').doc(id).set(doc); } else { ST.list.unshift(Object.assign({id},doc)); LS.set('eios-versiones',ST.list); } }catch(e){ msg('bad','No se pudo guardar la versión.'); return; }
+  if(!ST.db) {} else ST.list.unshift(Object.assign({id},doc));
+  await activar(id); $('#prev').hidden=true; CUR=null; msg('ok','Versión «'+nombre+'» guardada y en uso. Vuelve al comparador para verla.'); };
+const GUIA=[["001_Proveedores", "Lista de proveedores (código, nombre, NIF, contacto).", 1], ["002_Clientes", "Lista de clientes.", 1], ["003_ Articulos", "Artículos: SKU, descripción, proveedor, familia y unidad.", 1], ["004_Inventario", "Existencias físicas, mínimo, seguridad y reservas por artículo.", 1], ["006_Compras_historicas", "Facturas de compra: fecha, proveedor, artículo, cantidad y precio.", 1], ["007_Ventas_historicas", "Facturas de venta: fecha, cliente, artículo, cantidad y precio.", 1], ["008_Referencias_Precios", "Coste y precio de venta de referencia por artículo.", 1], ["010_Flujos_Tesoreria", "Cobros y pagos previstos con su fecha de vencimiento.", 1], ["011_Balance", "Saldos de cuentas al corte (banco incluido).", 1], ["012_Cartera_Cobros", "Cuotas de cobro de clientes y su pendiente al corte.", 1], ["013_Planificacion_Stock", "Ventas del periodo, consumo por día y cobertura por artículo.", 1], ["015_Condiciones_Proveedor", "Plazo de pago, cuotas, descuentos, portes, pedido mínimo y plazo de entrega.", 1], ["016_Parametros_App", "Saldo mínimo, margen de aviso, IVA y vigencia de las ofertas.", 1], ["018_Entregas_Compras", "Fecha prometida y real de cada entrega de proveedor.", 1], ["020_Fiabilidad_Resumen", "Resumen de cobros por cliente (retraso medio, reclamaciones).", 1], ["021_Parametros_Rotura", "Parámetros para calcular la rotura de stock en euros.", 1], ["014_Recepciones_Pendientes", "Pedidos pendientes de recibir.", 0], ["022_Estacionalidad", "Consumo por mes para el factor de temporada (si lo hay).", 0], ["023_Caducidad", "Vida útil por artículo (si aplica).", 0], ["024_Alternativas_Proveedor", "Ofertas de proveedores alternativos.", 0]];
+$('#guia').innerHTML=GUIA.map(g=>`<tr><td><code>${g[0]}</code></td><td>${g[1]}</td><td>${g[2]?'Sí':'Opcional'}</td></tr>`).join('');
+
+/* ---- actualización diaria ---- */
+let DCUR=null;
+function baseAct(){ const v=ST.list.find(x=>x.id===ST.act); if(!v) return null; try{ return {v,o:JSON.parse(v.datos)}; }catch(e){ return null; } }
+function dBaseRender(){ const b=baseAct(); $('#dbase').innerHTML=b?`Se aplicará sobre la versión en uso: <b>${esc(b.v.nombre)}</b> (datos al ${b.o.D.corte.split('-').reverse().join('/')}).`:'<b>Antes de actualizar hace falta una versión en uso:</b> importa primero el libro completo (más abajo, paso 1). Con los datos originales de la app no se puede actualizar.'; $('#dfile').disabled=!b; }
+function dmsg(c,t){ $('#dmsg').innerHTML=`<div class="banner ${c==='ok'?'ok':c==='warn'?'warn':'bad'} small">${esc(t)}</div>`; }
+async function leerDia(file){
+  $('#dprev').hidden=true; DCUR=null; const b=baseAct(); if(!b){ dmsg('bad','No hay versión en uso sobre la que actualizar.'); return; }
+  dmsg('warn','Leyendo '+file.name+'…');
+  try{ const wb=XLSX.read(await file.arrayBuffer(),{type:'array'}); const {B,rep}=EIOSImport.applyDaily(XLSX,wb,b.o,{corte:$('#dcorte').value||null});
+    const dt=B.D.corte.split('-').reverse().join('/');
+    $('#dprev').innerHTML=`<div class="banner ok small"><b>Esto es lo que se actualizará (${dt}):</b><ul style="margin:6px 0 0;padding-left:18px">${rep.cambios.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+     ${rep.avisos.length?`<div class="banner warn small"><b>Conviene revisar:</b><ul style="margin:6px 0 0;padding-left:18px">${rep.avisos.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
+     <p class="note" style="margin:0">Hojas leídas: ${rep.hojas.join(', ')}. Lo que no aparece (ventas, compras históricas, condiciones, proveedores) se queda como estaba.</p>
+     ${b.o.D.actualizado?`<label class="small" style="display:flex;gap:8px"><input type="checkbox" id="dsust" checked><span>Sustituir la actualización anterior (así no se acumulan versiones)</span></label>`:''}
+     <div><button class="btn primary" id="dsave" type="button">Aplicar y guardar como nueva versión</button></div>`;
+    $('#dprev').hidden=false; DCUR={B,rep,b,fichero:file.name}; $('#dsave').onclick=guardarDia; dmsg('ok','Libro del día leído correctamente.');
+  }catch(e){ dmsg('bad',(e&&e.message)||'No he podido leer el libro.'); } }
+async function guardarDia(){ if(!DCUR) return; const {B,rep,b}=DCUR, id='v'+Date.now().toString(36), dt=B.D.corte.split('-').reverse().join('/');
+  const base=String(b.v.nombre).replace(/ · actualizado .*$/,''), nombre=base+' · actualizado '+dt;
+  const doc={nombre,fecha:new Date().toISOString(),fichero:DCUR.fichero,resumen:'Actualización del día ('+rep.hojas.join(', ')+') · '+String(b.v.resumen).replace(/^Actualización del día \([^)]*\) · /,''),datos:JSON.stringify(B)};
+  try{ if(ST.db){ await ST.db.collection('versiones').doc(id).set(doc); } else { ST.list.unshift(Object.assign({id},doc)); LS.set('eios-versiones',ST.list); } }catch(e){ dmsg('bad','No se pudo guardar la actualización.'); return; }
+  if(ST.db) ST.list.unshift(Object.assign({id},doc));
+  const sust=$('#dsust')&&$('#dsust').checked, antes=b.v.id;
+  await activar(id); if(sust) await borrar(antes);
+  $('#dprev').hidden=true; DCUR=null; dBaseRender(); dmsg('ok','Actualización guardada y en uso. Vuelve al comparador para verla.'); }
+$('#dfile').onchange=e=>{ const f=e.target.files[0]; if(f){ leerDia(f).finally(()=>{ try{ e.target.value=''; }catch(x){} }); } };
+{ const dz2=$('#ddrop'); dz2.ondragover=e=>{e.preventDefault();dz2.classList.add('over');}; dz2.ondragleave=()=>dz2.classList.remove('over'); dz2.ondrop=e=>{e.preventDefault();dz2.classList.remove('over'); if(e.dataTransfer.files[0]&&!$('#dfile').disabled) leerDia(e.dataTransfer.files[0]);}; }
+init();
+</script>
+<script src="import_wizard.js"></script></body></html>
